@@ -154,6 +154,9 @@ import "../contracts/Diamond.sol";
 import "../contracts/facets/ERC721Facet.sol";
 import "../contracts/facets/ERC20Facet.sol";
 import {AuctionMarketPlaceFaucet} from "../contracts/facets/AuctionMarketPlaceFaucet.sol";
+import {LibAppStorage} from "../contracts/libraries/LibAppStorage.sol";
+import {LibERC20} from "../contracts/libraries/LibERC20.sol";
+import {NFTONE} from "../contracts/NFTONE.sol";
 
 contract DiamondDeployer is Test, IDiamondCut {
     //contract types of facets to be deployed
@@ -161,19 +164,20 @@ contract DiamondDeployer is Test, IDiamondCut {
     DiamondCutFacet dCutFacet;
     DiamondLoupeFacet dLoupe;
     OwnershipFacet ownerF;
-    ERC721Facet erc721Facet;
+
     ERC20Facet erc20Facet;
     AuctionMarketPlaceFaucet auctionF;
+    NFTONE nftone;
 
-    function testDeployDiamond() public {
+    function setUp() public {
         //deploy facets
         dCutFacet = new DiamondCutFacet();
         diamond = new Diamond(address(this), address(dCutFacet));
         dLoupe = new DiamondLoupeFacet();
         ownerF = new OwnershipFacet();
-        erc721Facet = new ERC721Facet();
         erc20Facet = new ERC20Facet();
         auctionF = new AuctionMarketPlaceFaucet();
+        nftone = new NFTONE();
 
         //upgrade diamond with facets
 
@@ -235,4 +239,43 @@ contract DiamondDeployer is Test, IDiamondCut {
         address _init,
         bytes calldata _calldata
     ) external override {}
+
+    function mkaddr(string memory name) public returns (address) {
+        address addr = address(
+            uint160(uint256(keccak256(abi.encodePacked(name))))
+        );
+        vm.label(addr, name);
+        return addr;
+    }
+
+    address A = mkaddr("staker a");
+    address B = mkaddr("staker b");
+
+    function testERC20Mint() public {
+        ERC20Facet(address(diamond)).erc20mint();
+        ERC20Facet(address(diamond)).erc20transfer(A, 50_000_000e18);
+    }
+
+    function testNFTONEMint() public {
+        NFTONE(address(nftone)).safeMint(A, 0, "");
+    }
+
+    function testAuctionCreation() public {
+        console.log(address(diamond));
+        console.log(address(A));
+        vm.startPrank(A);
+        NFTONE(address(nftone)).approve(address(diamond), 0);
+        vm.stopPrank();
+        AuctionMarketPlaceFaucet l = AuctionMarketPlaceFaucet(address(diamond));
+        l.createAuction(
+            LibAppStorage.Categories.ERC721,
+            address(nftone),
+            address(diamond),
+            0,
+            block.timestamp + 100,
+            10_000_000e18,
+            0,
+            ""
+        );
+    }
 }
