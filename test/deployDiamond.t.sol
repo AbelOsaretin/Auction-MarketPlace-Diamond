@@ -151,7 +151,6 @@ import "../contracts/facets/OwnershipFacet.sol";
 import "forge-std/Test.sol";
 import "../contracts/Diamond.sol";
 
-import "../contracts/facets/ERC721Facet.sol";
 import "../contracts/facets/ERC20Facet.sol";
 import {AuctionMarketPlaceFaucet} from "../contracts/facets/AuctionMarketPlaceFaucet.sol";
 import {LibAppStorage} from "../contracts/libraries/LibAppStorage.sol";
@@ -258,14 +257,18 @@ contract DiamondDeployer is Test, IDiamondCut {
 
     function testNFTONEMint() public {
         NFTONE(address(nftone)).safeMint(A, 0, "");
+        NFTONE(address(nftone)).name();
+        NFTONE(address(nftone)).symbol();
+        address _owner = NFTONE(address(nftone)).ownerOf(0);
+        uint iud = NFTONE(address(nftone)).balanceOf(A);
+        assertEq(iud, 1);
+        assertEq(A, _owner);
     }
 
     function testAuctionCreation() public {
-        console.log(address(diamond));
-        console.log(address(A));
-        vm.startPrank(A);
+        testNFTONEMint();
+        vm.prank(A);
         NFTONE(address(nftone)).approve(address(diamond), 0);
-        vm.stopPrank();
         AuctionMarketPlaceFaucet l = AuctionMarketPlaceFaucet(address(diamond));
         l.createAuction(
             LibAppStorage.Categories.ERC721,
