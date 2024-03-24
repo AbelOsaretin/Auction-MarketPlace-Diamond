@@ -9,10 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract AuctionMarketPlaceFaucet {
     LibAppStorage.AppStorage internal l;
 
-    function name() external pure returns (string memory) {
-        return "Auction NFT MarketPlace";
-    }
-
     function createAuction(
         LibAppStorage.Categories _category,
         address _addressNFTCollection,

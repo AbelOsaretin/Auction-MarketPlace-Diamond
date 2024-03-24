@@ -11,13 +11,6 @@ library LibAppStorage {
     );
 
     struct AppStorage {
-        //ERC20
-        
-        
-        uint256 totalSupply;
-        
-        mapping(address => uint256) balances;
-        mapping(address => mapping(address => uint256)) allowances;
         //ERC721
         mapping(uint256 => address) _owners;
         mapping(address => uint256) _balances;
@@ -109,32 +102,32 @@ library LibAppStorage {
         );
         l._tokenApprovals[_tokenId] = address(0);
         l._owners[_tokenId] = _to;
-        l.balances[_from]--;
-        l.balances[_to]++;
+        l._balances[_from]--;
+        l._balances[_to]++;
         emit Transfer(_from, _to, _tokenId);
     }
 
     // ERC20
-    function transferFrom(address _from, address _to, uint256 _value) internal {
-        AppStorage storage l = getStorage();
-        uint256 _allowance = l.allowances[_from][msg.sender];
-        if (msg.sender != _from || _allowance < _value) {
-            revert("LibAppStorage: transfer amount exceeds allowance");
-        }
-        l.allowances[_from][msg.sender] = _allowance - _value;
-        transfer(_to, _value);
-    }
+    // function transferFrom(address _from, address _to, uint256 _value) internal {
+    //     AppStorage storage l = getStorage();
+    //     uint256 _allowance = l.allowances[_from][msg.sender];
+    //     if (msg.sender != _from || _allowance < _value) {
+    //         revert("LibAppStorage: transfer amount exceeds allowance");
+    //     }
+    //     l.allowances[_from][msg.sender] = _allowance - _value;
+    //     transfer(_to, _value);
+    // }
 
-    function transfer(address _to, uint256 _value) internal {
-        AppStorage storage s = getStorage();
-        require(
-            s.balances[msg.sender] >= _value,
-            "LibAppStorage: transfer amount exceeds balance"
-        );
-        s.balances[msg.sender] -= _value;
-        s.balances[_to] += _value;
-        emit LibERC20.Transfer(msg.sender, _to, _value);
-    }
+    // function transfer(address _to, uint256 _value) internal {
+    //     AppStorage storage s = getStorage();
+    //     require(
+    //         s.balances[msg.sender] >= _value,
+    //         "LibAppStorage: transfer amount exceeds balance"
+    //     );
+    //     s.balances[msg.sender] -= _value;
+    //     s.balances[_to] += _value;
+    //     emit LibERC20.Transfer(msg.sender, _to, _value);
+    // }
 
     function isContract(
         address _addr
